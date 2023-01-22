@@ -19,6 +19,7 @@ var configuration = Argument<string>("configuration", "Release");
 #addin nuget:?package=Cake.Yaml&version=6.0.0
 #addin nuget:?package=Newtonsoft.Json&version=13.0.2
 #addin nuget:?package=YamlDotNet&version=12.3.1
+#tool nuget:?package=dotnet-stryker&version=3.4.0&global
 
 ///////////////////////////////////////////////////////////////////////////////
 // GLOBAL VARIABLES
@@ -45,6 +46,9 @@ Dictionary<string, object> gitVersionOutput;
 string nugetVersion;
 string assemblyVersion;
 string assemblySemver;
+
+// Stryker
+var strykerConfig = File("stryker-config.json");
 
 ///////////////////////////////////////////////////////////////////////////////
 // INNER CLASSES
@@ -204,6 +208,28 @@ Task("__RunTests")
     }
 });
 
+Task("__RunMutationTests")
+    .Does(() =>
+{
+    foreach(var proj in GetFiles("./src/**/*.csproj"))
+    {
+        var mutationScore = XmlPeek(proj, "/Project/PropertyGroup/MutationScore/text()", new XmlPeekSettings { SuppressWarning = true });
+        if (int.TryParse(mutationScore, out var score))
+        {
+            var projectName = proj.GetFilename().FullPath;
+            var testProjName = projectName.Replace(".csproj", ".Specs.csproj");
+            var testProj = GetFiles($"./src/**/{testProjName}").Single();
+
+            Information($"Running mutation tests for '{proj}'. Test Project: '{testProj}'");
+            var result = StartProcess("dotnet", $"stryker --project {projectName} --test-project {testProj} --break-at {score} --config-file {strykerConfig}");
+            if (result != 0)
+            {
+                throw new InvalidOperationException($"The mutation testing of '{projectName}' project failed.");
+            }
+        }
+    }
+});
+
 Task("__CreateSignedNuGetPackage")
     .Does(() =>
 {
@@ -238,6 +264,7 @@ Task("Build")
     .IsDependentOn("__UpdateAssemblyVersionInformation")
     .IsDependentOn("__BuildSolutions")
     .IsDependentOn("__RunTests")
+    .IsDependentOn("__RunMutationTests")
     .IsDependentOn("__CreateSignedNuGetPackage");
 
 ///////////////////////////////////////////////////////////////////////////////
