@@ -49,7 +49,7 @@ string assemblySemver;
 
 // Stryker / Mutation Testing
 var strykerConfig = File("stryker-config.json");
-var strykerOutput = Directory("StrykerOutput/reports");
+var strykerOutput = Directory("StrykerOutput");
 
 ///////////////////////////////////////////////////////////////////////////////
 // INNER CLASSES

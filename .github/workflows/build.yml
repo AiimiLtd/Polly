@@ -55,7 +55,7 @@ jobs:
     - uses: actions/upload-artifact@v3
       with:
         name: mutation-report
-        path: StrykerOutput
+        path: StrykerOutput/reports
 
     - name: Publish NuGet packages
       uses: actions/upload-artifact@v3
