@@ -49,7 +49,7 @@ string assemblySemver;
 
 // Stryker / Mutation Testing
 var strykerConfig = File("stryker-config.json");
-var strykerOutput = Directory("StrykerOutput");
+var strykerOutput = Directory("StrykerOutput/reports");
 
 ///////////////////////////////////////////////////////////////////////////////
 // INNER CLASSES
@@ -89,7 +89,8 @@ Task("__Clean")
     {
         testResultsDir,
         nupkgDestDir,
-        artifactsDir
+        artifactsDir,
+        strykerOutput
   	};
 
     CleanDirectories(cleanDirectories);
