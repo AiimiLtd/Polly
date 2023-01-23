@@ -52,6 +52,11 @@ jobs:
         file: ./src/Polly.Specs/coverage-reports/Cobertura.xml
         flags: ${{ matrix.os_name }}
 
+    - uses: actions/upload-artifact@v3
+      with:
+        name: mutation-report
+        path: StrykerOutput
+
     - name: Publish NuGet packages
       uses: actions/upload-artifact@v3
       with:

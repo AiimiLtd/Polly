@@ -47,8 +47,9 @@ string nugetVersion;
 string assemblyVersion;
 string assemblySemver;
 
-// Stryker
+// Stryker / Mutation Testing
 var strykerConfig = File("stryker-config.json");
+var strykerOutput = Directory("StrykerOutput");
 
 ///////////////////////////////////////////////////////////////////////////////
 // INNER CLASSES
@@ -221,7 +222,7 @@ Task("__RunMutationTests")
             var testProj = GetFiles($"./src/**/{testProjName}").Single();
 
             Information($"Running mutation tests for '{proj}'. Test Project: '{testProj}'");
-            var result = StartProcess("dotnet", $"stryker --project {projectName} --test-project {testProj} --break-at {score} --config-file {strykerConfig}");
+            var result = StartProcess("dotnet", $"stryker --project {projectName} --test-project {testProj} --break-at {score} --config-file {strykerConfig} --output {strykerOutput}");
             if (result != 0)
             {
                 throw new InvalidOperationException($"The mutation testing of '{projectName}' project failed.");
