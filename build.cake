@@ -10,6 +10,7 @@ var configuration = Argument<string>("configuration", "Release");
 //////////////////////////////////////////////////////////////////////
 
 #Tool "xunit.runner.console&version=2.4.2"
+#Tool "dotnet-stryker&version=3.4.0"
 
 //////////////////////////////////////////////////////////////////////
 // EXTERNAL NUGET LIBRARIES
@@ -19,7 +20,6 @@ var configuration = Argument<string>("configuration", "Release");
 #addin nuget:?package=Cake.Yaml&version=6.0.0
 #addin nuget:?package=Newtonsoft.Json&version=13.0.2
 #addin nuget:?package=YamlDotNet&version=12.3.1
-#tool nuget:?package=dotnet-stryker&version=3.4.0&global
 
 ///////////////////////////////////////////////////////////////////////////////
 // GLOBAL VARIABLES
@@ -212,6 +212,8 @@ Task("__RunTests")
 Task("__RunMutationTests")
     .Does(() =>
 {
+    var strykerPath = Context.Tools.Resolve("Stryker.CLI.dll");
+
     foreach(var proj in GetFiles("./src/**/*.csproj"))
     {
         var mutationScore = XmlPeek(proj, "/Project/PropertyGroup/MutationScore/text()", new XmlPeekSettings { SuppressWarning = true });
@@ -222,7 +224,7 @@ Task("__RunMutationTests")
             var testProj = GetFiles($"./src/**/{testProjName}").Single();
 
             Information($"Running mutation tests for '{proj}'. Test Project: '{testProj}'");
-            var result = StartProcess("dotnet", $"stryker --project {projectName} --test-project {testProj} --break-at {score} --config-file {strykerConfig} --output {strykerOutput}");
+            var result = StartProcess("dotnet", $"{strykerPath} --project {projectName} --test-project {testProj} --break-at {score} --config-file {strykerConfig} --output {strykerOutput}");
             if (result != 0)
             {
                 throw new InvalidOperationException($"The mutation testing of '{projectName}' project failed.");
